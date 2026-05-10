@@ -1,3 +1,4 @@
+import { UsersProvider } from "@/app/context/UsersContext";
 import { Metadata } from "next";
 
 interface Props {
@@ -11,7 +12,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `https://jsonplaceholder.typicode.com/users/${id}`,
     );
     const data = await user.json();
-    console.log(data);
     return {
       title: `${data.name} - User Management System`,
       description: `View details for ${data.name}. Email: ${data.email}, Phone: ${data.phone}, Website: ${data.website}`,
@@ -34,5 +34,5 @@ export default function UserDetailLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <UsersProvider>{children}</UsersProvider>;
 }
