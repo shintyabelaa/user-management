@@ -20,15 +20,15 @@ const items = [
 
 interface Props {
   limit: number;
-  setLimit: (limit: number) => void;
+  onLimitChange: (limit: number) => void;
 }
 
-export function LimitSort({ limit, setLimit }: Props) {
+export function LimitSort({ limit, onLimitChange }: Props) {
   return (
     <Select
       items={items}
       value={limit.toString()}
-      onValueChange={(value) => setLimit(Number(value))}
+      onValueChange={(value) => onLimitChange(Number(value))}
     >
       <SelectTrigger className="rounded-md w-full">
         <SelectValue />

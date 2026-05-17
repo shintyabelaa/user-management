@@ -8,15 +8,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { User } from "@/types";
-import { useRouter } from "next/navigation";
+import { Post, Todo, User } from "@/types";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Props {
-  paginatedUsers: any[];
-  filteredUsers: any[];
+  paginatedUsers: User[];
+  filteredUsers: User[];
   loading: boolean;
-  posts: any[];
-  todos: any[];
+  posts: Post[];
+  todos: Todo[];
 }
 
 export function UserTable({
@@ -27,6 +27,7 @@ export function UserTable({
   todos,
 }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   return (
     <Table>
@@ -90,21 +91,23 @@ export function UserTable({
             <TableRow
               key={user.id}
               className="cursor-pointer"
-              onClick={() => router.push(`/users/${user.id}`)}
+              onClick={() =>
+                router.push(`/users/${user.id}?${searchParams.toString()}`)
+              }
             >
               <TableCell>{user.name}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.website}</TableCell>
               <TableCell className="text-center">
                 <div className="bg-secondary/20 text-mist-500 font-semibold w-10 h-10 flex items-center justify-center rounded-xs mx-auto">
-                  {posts.filter((post: any) => post.userId === user.id).length}
+                  {posts.filter((post: Post) => post.userId === user.id).length}
                 </div>
               </TableCell>
               <TableCell className="text-center">
                 <div className="bg-primary/20 text-primary font-semibold w-10 h-10 flex items-center justify-center rounded-xs mx-auto">
                   {
                     todos.filter(
-                      (todo: any) => todo.userId === user.id && todo.completed,
+                      (todo: Todo) => todo.userId === user.id && todo.completed,
                     ).length
                   }
                 </div>
@@ -113,7 +116,8 @@ export function UserTable({
                 <div className="bg-accent/20 text-accent font-semibold w-10 h-10 flex items-center justify-center rounded-xs mx-auto">
                   {
                     todos.filter(
-                      (todo: any) => todo.userId === user.id && !todo.completed,
+                      (todo: Todo) =>
+                        todo.userId === user.id && !todo.completed,
                     ).length
                   }
                 </div>

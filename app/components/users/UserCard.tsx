@@ -1,23 +1,16 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { User } from "@/types";
-import { useRouter } from "next/navigation";
+
+import { Post, Todo, User } from "@/types";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Props {
-  paginatedUsers: any[];
-  filteredUsers: any[];
+  paginatedUsers: User[];
+  filteredUsers: User[];
   loading: boolean;
-  posts: any[];
-  todos: any[];
+  posts: Post[];
+  todos: Todo[];
 }
 
 export function UserCard({
@@ -28,6 +21,7 @@ export function UserCard({
   todos,
 }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   if (loading) {
     return (
@@ -78,7 +72,9 @@ export function UserCard({
     <Card
       key={user.id}
       className="cursor-pointer p-6 "
-      onClick={() => router.push(`/users/${user.id}`)}
+      onClick={() =>
+        router.push(`/users/${user.id}?${searchParams.toString()}`)
+      }
     >
       <div className="flex flex-col gap-3">
         <div className="text-primary font-bold capitalize text-lg">
@@ -91,7 +87,7 @@ export function UserCard({
           <div className="flex flex-col items-center">
             <div className="">Posts</div>
             <div className="font-bold text-mist-500">
-              {posts.filter((post: any) => post.userId === user.id).length}
+              {posts.filter((post: Post) => post.userId === user.id).length}
             </div>
           </div>
           <div className="flex flex-col items-center">
@@ -99,7 +95,7 @@ export function UserCard({
             <div className="font-bold text-primary">
               {
                 todos.filter(
-                  (todo: any) => todo.userId === user.id && todo.completed,
+                  (todo: Todo) => todo.userId === user.id && todo.completed,
                 ).length
               }{" "}
             </div>
@@ -109,7 +105,7 @@ export function UserCard({
             <div className="font-bold text-accent">
               {
                 todos.filter(
-                  (todo: any) => todo.userId === user.id && !todo.completed,
+                  (todo: Todo) => todo.userId === user.id && !todo.completed,
                 ).length
               }{" "}
             </div>

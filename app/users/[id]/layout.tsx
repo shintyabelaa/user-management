@@ -8,7 +8,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const id = (await params).id;
-    const user: any = await fetch(
+    const user = await fetch(
       `https://jsonplaceholder.typicode.com/users/${id}`,
     );
     const data = await user.json();

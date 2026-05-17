@@ -1,22 +1,46 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { Post, Todo, User } from "@/types";
+import {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
-const UsersContext = createContext<any>(null);
+type UsersContextType = {
+  users: User[];
+  posts: Post[];
+  todos: Todo[];
+
+  loading: boolean;
+  error: string;
+
+  setLoading: Dispatch<SetStateAction<boolean>>;
+
+  fetchPosts: () => Promise<void>;
+  fetchTodos: () => Promise<void>;
+
+  userPosts: Post[];
+  userTodos: Todo[];
+
+  fetchUserPosts: (userId: string) => Promise<void>;
+  fetchUserTodos: (userId: string) => Promise<void>;
+};
+
+const UsersContext = createContext<UsersContextType | null>(null);
 
 export function UsersProvider({ children }: { children: React.ReactNode }) {
-  const [users, setUsers] = useState([]);
-  const [posts, setPosts] = useState([]);
-  const [todos, setTodos] = useState([]);
-  const [userPosts, setUserPosts] = useState([]);
-  const [userTodos, setUserTodos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("");
-  const [limit, setLimit] = useState(5);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState<User[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [userTodos, setUserTodos] = useState<Todo[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
   const fetchUsers = async () => {
     const res = await fetch("https://jsonplaceholder.typicode.com/users");
@@ -51,23 +75,23 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
     setTodos(data);
   };
 
-  const fetchUserPosts = async (userId: string) => {
+  const fetchUserPosts = useCallback(async (userId: string) => {
     const res = await fetch(
       `https://jsonplaceholder.typicode.com/posts?userId=${userId}`,
     );
 
     const data = await res.json();
     setUserPosts(data);
-  };
+  }, []);
 
-  const fetchUserTodos = async (userId: string) => {
+  const fetchUserTodos = useCallback(async (userId: string) => {
     const res = await fetch(
       `https://jsonplaceholder.typicode.com/todos?userId=${userId}`,
     );
 
     const data = await res.json();
     setUserTodos(data);
-  };
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,17 +120,6 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
         loading,
         error,
 
-        searchTerm,
-        setSearchTerm,
-
-        sortBy,
-        setSortBy,
-
-        limit,
-        setLimit,
-
-        currentPage,
-        setCurrentPage,
         setLoading,
         fetchPosts,
         fetchTodos,
@@ -121,4 +134,12 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useUsers = () => useContext(UsersContext);
+export const useUsers = () => {
+  const context = useContext(UsersContext);
+
+  if (!context) {
+    throw new Error("useUsers must be used within UsersProvider");
+  }
+
+  return context;
+};

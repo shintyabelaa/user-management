@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { useUsers } from "../context/UsersContext";
 import UserDetailPage from "../users/[id]/page";
 import userEvent from "@testing-library/user-event";
@@ -14,6 +14,9 @@ afterEach(() => {
 jest.mock("next/navigation", () => ({
   useParams: () => ({
     id: "1",
+  }),
+  useSearchParams: () => ({
+    toString: () => "search=leanne&sort=pending",
   }),
 }));
 

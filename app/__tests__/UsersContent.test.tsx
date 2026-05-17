@@ -3,17 +3,36 @@ import { UsersProvider } from "../context/UsersContext";
 import { UsersContent } from "../components/users/UserContent";
 import userEvent from "@testing-library/user-event";
 
+const push = jest.fn();
+
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: jest.fn(),
+    push,
     replace: jest.fn(),
     refresh: jest.fn(),
+  }),
+
+  useSearchParams: () => ({
+    get: (key: string) => {
+      const params: Record<string, string> = {
+        search: "",
+        sort: "",
+        limit: "5",
+        page: "1",
+      };
+
+      return params[key];
+    },
+
+    toString: () => "",
   }),
 }));
 
 global.fetch = jest.fn();
 
 beforeEach(() => {
+  jest.clearAllMocks();
+
   (fetch as jest.Mock).mockImplementation((url) => {
     if (url.includes("users")) {
       return Promise.resolve({
@@ -58,7 +77,7 @@ describe("UsersContent", () => {
     ).toBeInTheDocument();
   });
 
-  it("filters users by search", async () => {
+  it("updates search params when typing", async () => {
     render(
       <UsersProvider>
         <UsersContent />
@@ -69,10 +88,10 @@ describe("UsersContent", () => {
 
     await userEvent.type(input, "Leanne");
 
-    expect(await screen.getAllByText(/leanne graham/i)).toHaveLength(2);
+    expect(push).toHaveBeenCalled();
   });
 
-  it("toggles most pending sort button", async () => {
+  it("updates sort params", async () => {
     render(
       <UsersProvider>
         <UsersContent />
@@ -83,7 +102,9 @@ describe("UsersContent", () => {
 
     await userEvent.click(button);
 
-    expect(button).toHaveClass("bg-primary");
+    expect(push).toHaveBeenCalledWith(
+      expect.stringContaining("sort=most-pending"),
+    );
   });
 
   it("shows empty state", async () => {
@@ -107,24 +128,12 @@ describe("UsersContent", () => {
       </UsersProvider>,
     );
 
-    expect(await screen.findAllByText(/No users found/i)).toHaveLength(2);
+    expect(await screen.findAllByText(/no users found/i)).toHaveLength(2);
   });
 
   it("shows loading state", () => {
     (fetch as jest.Mock).mockImplementation(() => new Promise(() => {}));
-    render(
-      <UsersProvider>
-        <UsersContent />
-      </UsersProvider>,
-    );
 
-    expect(screen.getAllByTestId("user-table-skeleton").length).toBeGreaterThan(
-      0,
-    );
-  });
-
-  it("shows empty user", () => {
-    (fetch as jest.Mock).mockImplementation(() => new Promise(() => {}));
     render(
       <UsersProvider>
         <UsersContent />

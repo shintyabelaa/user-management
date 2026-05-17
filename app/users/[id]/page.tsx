@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Post, Todo, User } from "@/types";
 import {
   ArrowLeft02Icon,
   Building,
@@ -18,7 +19,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function UserDetailPage() {
@@ -31,8 +32,9 @@ export default function UserDetailPage() {
     fetchUserPosts,
   } = useUsers();
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params.id as string;
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User>();
   const [visiblePosts, setVisiblePosts] = useState(5);
   const [visibleTodos, setVisibleTodos] = useState(5);
   const [error, setError] = useState<Error | null>(null);
@@ -42,17 +44,23 @@ export default function UserDetailPage() {
       try {
         setLoading(true);
 
+        setVisiblePosts(5);
+        setVisibleTodos(5);
+
         const res = await fetch(
           `https://jsonplaceholder.typicode.com/users/${id}`,
         );
 
         if (!res.ok) {
-          throw new Error("Failed to fetch user");
+          setUser(undefined);
+          return;
         }
 
-        const data = await res.json();
+        const data: User = await res.json();
 
         setUser(data);
+
+        await Promise.all([fetchUserPosts(id), fetchUserTodos(id)]);
       } catch (err) {
         setError(err as Error);
       } finally {
@@ -60,27 +68,23 @@ export default function UserDetailPage() {
       }
     };
 
-    if (error) {
-      throw error;
-    }
-
     if (id) {
       fetchUser();
-      fetchUserPosts(id);
-      fetchUserTodos(id);
     }
-  }, [id]);
+  }, [id, fetchUserPosts, fetchUserTodos, setLoading]);
 
-  useEffect(() => {
-    setVisiblePosts(5);
-    setVisibleTodos(5);
-  }, [id]);
+  if (error) {
+    throw error;
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen w-full bg-background p-6 flex flex-col items-center justify-center">
         <div className="flex w-full flex-col gap-1">
-          <Link href="/users" className="mb-6 inline-block">
+          <Link
+            href={`/users?${searchParams.toString()}`}
+            className="mb-6 inline-block"
+          >
             <Button variant="outline" size="sm">
               <HugeiconsIcon icon={ArrowLeft02Icon} />
               Back to Users
@@ -126,12 +130,16 @@ export default function UserDetailPage() {
       </div>
     );
   }
-  if (!user) {
+
+  if (!user || error) {
     return (
       <div className="min-h-screen bg-background p-6 flex items-center justify-center">
         <Card className="max-w-md w-full p-6 border border-border">
           <p className="text-muted-foreground text-center">User not found</p>
-          <Link href="/users" className="mt-4 block">
+          <Link
+            href={`/users?${searchParams.toString()}`}
+            className="mt-4 block"
+          >
             <Button variant="outline" size="sm" className="w-full">
               <HugeiconsIcon icon={ArrowLeft02Icon} />
               Back to Users
@@ -144,7 +152,10 @@ export default function UserDetailPage() {
   return (
     <div className="min-h-screen w-full bg-background p-6 flex flex-col items-center justify-center">
       <div className="flex w-full md:max-w-3xl flex-col gap-1">
-        <Link href="/users" className="mb-6 inline-block">
+        <Link
+          href={`/users?${searchParams.toString()}`}
+          className="mb-6 inline-block"
+        >
           <Button variant="outline" size="sm">
             <HugeiconsIcon icon={ArrowLeft02Icon} />
             Back to Users
@@ -255,7 +266,7 @@ export default function UserDetailPage() {
 
                 <div className="w-5 h-5 rounded-full  flex items-center justify-center  text-[8px] font-medium  transition-colors  bg-gray-300  text-muted-foreground  group-hover:bg-primary  group-hover:text-white  group-data-active:bg-primary! group-data-active:text-white!">
                   {
-                    userPosts.filter((post: any) => post.userId === user.id)
+                    userPosts.filter((post: Post) => post.userId === user.id)
                       .length
                   }
                 </div>
@@ -275,7 +286,7 @@ export default function UserDetailPage() {
 
                 <div className="w-5 h-5 rounded-full  flex items-center justify-center  text-[8px] font-medium  transition-colors  bg-gray-300  text-muted-foreground  group-hover:bg-primary  group-hover:text-white  group-data-active:bg-primary! group-data-active:text-white!">
                   {
-                    userTodos.filter((todo: any) => todo.userId === user.id)
+                    userTodos.filter((todo: Todo) => todo.userId === user.id)
                       .length
                   }
                 </div>
@@ -288,7 +299,7 @@ export default function UserDetailPage() {
                   No posts found for this user.
                 </p>
               ) : (
-                userPosts.slice(0, visiblePosts).map((post: any) => (
+                userPosts.slice(0, visiblePosts).map((post: Post) => (
                   <Card
                     key={post.id}
                     className=" w-full p-6 border border-border"
@@ -320,7 +331,7 @@ export default function UserDetailPage() {
                   No todos found for this user.
                 </p>
               ) : (
-                userTodos.slice(0, visibleTodos).map((todo: any) => (
+                userTodos.slice(0, visibleTodos).map((todo: Todo) => (
                   <Card
                     key={todo.id}
                     className=" w-full p-6 border border-border"
