@@ -20,9 +20,9 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-export default function UserDetailPage() {
+function UserDetailPageContent() {
   const {
     loading,
     setLoading,
@@ -377,5 +377,21 @@ export default function UserDetailPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function UserDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen w-full bg-background p-6 flex items-center justify-center">
+          <div className="text-muted-foreground animate-pulse">
+            Loading user profile...
+          </div>
+        </div>
+      }
+    >
+      <UserDetailPageContent />
+    </Suspense>
   );
 }
