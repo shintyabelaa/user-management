@@ -23,6 +23,7 @@ Aplikasi telah di-deploy dan dapat diakses secara publik melalui tautan berikut:
 Aplikasi ini dibangun menggunakan ekosistem pengembangan web modern:
 
 - **Framework**: [Next.js (App Router)](https://nextjs.org/)
+- **Unit Testing**: [Jest](https://jestjs.io/)
 - **Styling**: [Tailwind CSS v4.0](https://tailwindcss.com/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Deployment Platform**: [Vercel](https://vercel.com/)
