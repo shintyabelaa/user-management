@@ -1,5 +1,5 @@
 "use client";
-
+import { Suspense } from "react";
 import { UsersProvider } from "../context/UsersContext";
 import { UsersContent } from "../components/users/UserContent";
 
@@ -14,7 +14,9 @@ export default function UsersPage() {
       </div>
 
       <UsersProvider>
-        <UsersContent />
+        <Suspense fallback={<div>Loading user dashboard...</div>}>
+          <UsersContent />
+        </Suspense>
       </UsersProvider>
     </div>
   );
